@@ -1,4 +1,5 @@
 ui = true
+disable_clustering = true
 
 storage "dynamodb" {
   ha_enabled = "false"
