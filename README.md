@@ -131,6 +131,141 @@ HA Enabled      false
 | The vault can be unsealed from multiple computers and the keys should never be together. A single malicious operator does not have enough keys to be malicious. |
 | --- |
 
-### Vault UI
+The vault can be programmatically unsealed using the API
+```bash
+curl -X PUT -d '{"key": "unseal_key_1"}' http://127.0.0.1:8200/v1/sys/unseal
+curl -X PUT -d '{"key": "unseal_key_2"}' http://127.0.0.1:8200/v1/sys/unseal
+curl -X PUT -d '{"key": "unseal_key_3"}' http://127.0.0.1:8200/v1/sys/unseal
+```
+# Authentication and Authorisation
+Authentication is about validating your credentials such as Username/User ID and password to verify one's identity. Authorisation is about validating what resources an authenticated user can or cannot access to.
+## Authentication
+Vault supports many different authentication mechanisms (LDAP, JWT, username/password, GitHub, etc.), but ultimately they all end up generating what's called a Vault Token. Therefore authentication is simply the process by which a user or machine gets a Vault Token to consume the API with.
+
+This section only covers the direct Vault Token authentication. Other authentication methods are discussed in the Vault [auth method documentation](https://www.vaultproject.io/docs/auth/).
+
+When we initialised the Vault, we obtained a *root* token. This token grants pretty much every permission to the user logging with this token.
+
+One can login using the token by using this command:
+```
+$ vault login <vault_token>
+
+Success! You are now authenticated. The token information displayed below
+is already stored in the token helper. You do NOT need to run "vault login"
+again. Future Vault requests will automatically use this token.
+
+Key                  Value
+---                  -----
+token                s.9b2r9IQXsGJxp0k9Y6520aKD
+token_accessor       elEgvgu6OMlBty0pHnzMH8bp
+token_duration       ∞
+token_renewable      false
+token_policies       ["root"]
+identity_policies    []
+policies             ["root"]
+```
+The output show which policies the token runs against. The policies define what the user can or cannot do and is discussed in the next section.
+
+New tokens can be created by using this command:
+```
+$ vault token create
+
+Key                  Value
+---                  -----
+token                s.V76o2N0mmRDfqNI1FjzfCqLF
+token_accessor       q3k0qmcXI1TG1hgcXgRdm8yD
+token_duration       ∞
+token_renewable      false
+token_policies       ["root"]
+identity_policies    []
+policies             ["root"]
+```
+
+The new token becomes a child of the current one and inherit its settings, including the policies. When a *parent* token is revoked, all its children are revoked as well. To revoke a token, simply use command ```vault token revoke <vault_token>```
+
+To see the status of a token, use command ```vault token lookup <vault_token>```
+## Authorisation
+Authorisation in Vault is implemented by the use of *policies*, written in either JSON or HCL format.
+
+To see a list of policies, use ```vault policy list```. To see the content of a policy, use ```vault policy read <policy_name>```.
+
+### Creating a policy
+
+The policy format is described [here](https://learn.hashicorp.com/vault/identity-access-management/iam-policies).
+
+Use this command to add a new policy to the system:
+```bash
+$ vault policy write <my_policy_name> <policy_file.hcl>
+```
+
+And this one to attach a policy to a new user:
+Use this command to add a new policy to the system:
+```bash
+vault token create -policy=<my_policy_name>
+```
+
+# Useful API calls
+Enquire the initialisation status of the vault:
+```bash
+$ curl http://127.0.0.1:8200/v1/sys/init
+```
+And its overall status:
+```bash
+$ curl http://127.0.0.1:8200/v1/sys/status
+```
+# Vault UI
 In order to access the UI, make sure that ```ui = true``` has been set in your vault configuration file.
-Then access https://127.0.0.1:8200/ui in your favorite browser
+Then access http://127.0.0.1:8200/ui in your favorite browser
+# Getting dynamic credentials from Amazon AWS
+First enable AWS secret engine:
+```bash
+$ vault secrets enable aws
+```
+
+Add an admin user that Vault can use to create AWS temp users when requested
+```bash
+$ vault write aws/config/root \
+    access_key=AKIAI4SGLQPBX6CSENIQ \
+    secret_key=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 \
+    region=eu-central-1
+```
+
+Then add a role that corresponds to a set of permissions that will be granted to the AWS user that we create on demand. Look at this step like this: *When I ask for a credential for "my-role", create the AWS user and attach the IAM policy { "Version": "2012..." }*.
+
+Let's assume we need a role for saving our backups somewhere on S3. We call it *backuparchiver*:
+```bash
+$ vault write aws/roles/backuparchiver \
+        credential_type=iam_user \
+        policy_document=-<<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:ListAllMyBuckets",
+        "s3:CreateBucket",
+        "s3:ListBucket",
+        "s3:HeadBucket"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+```
+
+Now every time we need to access to AWS for pushing a backup to S3, we will generate a pair of AWS Access Key ID and Secret Key, by running this command
+```
+$ vault read aws/creds/backuparchiver
+Key                Value
+---                -----
+lease_id           aws/creds/my-role/0bce0782-32aa-25ec-f61d-c026ff22106e
+lease_duration     768h
+lease_renewable    true
+access_key         AKIAJELUDIANQGRXCTZQ
+secret_key         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
+security_token     <nil>
+```
+This pair of Key ID and Secret Key is what the script will use to access to S3.
