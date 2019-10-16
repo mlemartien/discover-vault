@@ -211,7 +211,7 @@ $ curl http://127.0.0.1:8200/v1/sys/init
 ```
 And its overall status:
 ```bash
-$ curl http://127.0.0.1:8200/v1/sys/status
+$ curl http://127.0.0.1:8200/v1/sys/health
 ```
 # Vault UI
 In order to access the UI, make sure that ```ui = true``` has been set in your vault configuration file.
