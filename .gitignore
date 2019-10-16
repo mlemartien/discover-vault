@@ -2,6 +2,11 @@
 vault/file/
 vault/logs/
 
+# venv exclusions
+bin/
+include/
+lib/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
