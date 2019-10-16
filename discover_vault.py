@@ -4,7 +4,7 @@ import json
 import boto3
 import requests
 from requests.exceptions import HTTPError
-from Crypto.Cipher import AES
+# from Crypto.Cipher import AES
 import pyAesCrypt
 
 
@@ -12,7 +12,6 @@ class ImrimVault:
     def __init__(self, vault_host="http://127.0.0.1:8200"):
         self.vault_host = vault_host 
         self.vault_token = os.environ["VAULT_TOKEN"]
-
 
     def run_api(self, path, verb="GET", data=""):
         try:
@@ -69,7 +68,7 @@ def main():
     input("Press [Enter] to check if the Vault is open...")
 
     is_vault_sealed = imrim_vault.is_sealed()
-    print("The vault is {}.\n".format("sealed" if is_vault_sealed else "open"))
+    print("The vault is {}.\n".format("sealed, exiting..." if is_vault_sealed else "open"))
     if is_vault_sealed:
         quit()
 
