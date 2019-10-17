@@ -80,11 +80,11 @@ class ImrimVault:
         response = self.run_api(
             verb="POST",
             path=f"v1/transit/decrypt/{key_id}",
-            payload={
+            payload=json.dumps({
                 "ciphertext": ciphertext
-            }
+            })
         )
-        return response["data"]["plaintext"]
+        return response.json()["data"]["plaintext"]
 
 
     def get_aws_credentials(self, aws_role):
@@ -116,6 +116,7 @@ def main(*args):
     encryption_vault_master_key_id = "backup_files"
     aws_credentials_role = "backup_archiver"
     destination_s3_bucket = "imrim-confluence-postgres-backup"
+    encryption_decryption_buffer_size = 65536
     file_to_encrypt = "backup.sql"
     file_encrypted = f"{file_to_encrypt}.encrypted"    
     file_encrypted_downloaded = f"{file_to_encrypt}.encrypted.downloaded" 
@@ -123,8 +124,9 @@ def main(*args):
 
     # Get an instance of the vault object
     imrim_vault = ImrimVault()
-
-    print(f"\n")
+    
+    #
+    print("")
     input("Press [Enter] to check if the Vault is open...")
 
     is_vault_sealed = imrim_vault.is_sealed()
@@ -144,14 +146,14 @@ def main(*args):
 
         #
         input("Press [Enter] to encrypt the backup file...")
-        buffer_size = 65536
         pyAesCrypt.encryptFile(
             file_to_encrypt,
             file_encrypted,
             plaintext_key,
-            buffer_size
+            encryption_decryption_buffer_size
         )
         print(f"File {file_to_encrypt} has been encrypted.\n")
+        plaintext_key = ""
 
         #
         input("Press [Enter] to obtain a dynamic AWS login...")
@@ -254,13 +256,23 @@ def main(*args):
                 ciphertext_key = tag["Value"]
             elif tag["Key"] == "MasterKeyID":
                 encryption_vault_master_key_id = tag["Value"]
-
-        print(f"\n")
+        print("")
 
         #
         input("Press [Enter] to ask Vault to decrypt our Data Key")
         decrypted_data_key = imrim_vault.decrypt(encryption_vault_master_key_id, ciphertext_key)
-        printf("The decrypted Data Key is: {}")
+        print(f"The decrypted Data Key is: {decrypted_data_key}\n")
+
+        #
+        input("Press [Enter] to decrypt the file, then drop the plaintext key out of memory")
+        pyAesCrypt.decryptFile(
+            f"./{file_encrypted_downloaded}",
+            f"./{file_decrypted_downloaded}",
+            decrypted_data_key,
+            encryption_decryption_buffer_size
+        )
+        print(f"File is decrypted into {file_decrypted_downloaded}\n")
+        decrypted_data_key = ""
 
         
     # Release the AWS lease
