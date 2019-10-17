@@ -2,14 +2,14 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "imrim_backup_archiver",
             "Effect": "Allow",
             "Action": [
                 "s3:PutObject",
                 "s3:ListAllMyBuckets",
                 "s3:CreateBucket",
                 "s3:ListBucket",
-                "s3:HeadBucket"
+                "s3:HeadBucket",
+                "s3:PutObjectTagging"
             ],
             "Resource": "*"
         }

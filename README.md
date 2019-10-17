@@ -22,7 +22,7 @@ At startup, the server will read configuration HCL and JSON files from /vault/co
 
 docker run --rm \
   --name imrim_vault \
-  --env AWS_PROFILE=jacques \
+  --env AWS_PROFILE=vault_storage_driver \
   --env VAULT_ADDR=http://127.0.0.1:8200 \
   --env VAULT_API_ADDR=http://127.0.0.1:8200 \
   --publish 8200:8200 \

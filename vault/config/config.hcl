@@ -8,7 +8,7 @@ disable_clustering = true
 storage "dynamodb" {
   ha_enabled = "false"
   region     = "eu-central-1"
-  table      = "imrim-vault-data"
+  table      = "imrim-vault-data-2"
 }
 
 // Note the 0.0.0.0 binding; this is to let curl and other clients to
