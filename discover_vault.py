@@ -14,7 +14,7 @@ class ImrimVault:
         self.vault_token = os.environ["VAULT_TOKEN"]
 
 
-    def run_api(self, path, verb="GET", data=""):
+    def run_api(self, path, verb="GET", payload=""):
         try:
             if verb == "GET":
                 response = requests.get(
@@ -25,7 +25,15 @@ class ImrimVault:
             elif verb == "POST":
                 response = requests.post(
                     f"{self.vault_host}/{path}",
-                    headers={"X-Vault-Token": self.vault_token}
+                    headers={"X-Vault-Token": self.vault_token},
+                    data=payload
+                )                
+
+            elif verb == "PUT":
+                response = requests.post(
+                    f"{self.vault_host}/{path}",
+                    headers={"X-Vault-Token": self.vault_token},
+                    data=payload
                 )                
 
         except HTTPError as http_err:
@@ -47,6 +55,19 @@ class ImrimVault:
             print(f"Could not determine the seal status of the vault: error {response.status_code}")
         
         return sealed
+
+
+    def unseal_vault(self, key1, key2, key3):
+        try:
+            self.run_api("v1/sys/unseal", "PUT", "{'key': {}}".format(key1))
+            self.run_api("v1/sys/unseal", "PUT", "{'key': {}}".format(key2))
+            self.run_api("v1/sys/unseal", "PUT", "{'key': {}}".format(key3))
+
+        except Exception as e:
+            pass
+
+        return (self.is_sealed() == False)
+        
 
     def get_encryption_data_key(self, key_id):
         response = self.run_api(verb="POST",path=f"v1/transit/datakey/plaintext/{key_id}")
@@ -71,7 +92,7 @@ def main():
     is_vault_sealed = imrim_vault.is_sealed()
     print("The vault is {}.\n".format("sealed" if is_vault_sealed else "open"))
     if is_vault_sealed:
-        quit()
+        
 
     # input("Press [Enter] to log to the Vault...")
 
