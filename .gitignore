@@ -1,6 +1,7 @@
 # Project specific exclusions
 vault/file/
 vault/logs/
+backup.sql*
 
 # venv exclusions
 bin/
