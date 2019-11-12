@@ -32,7 +32,7 @@ class ImrimVault:
                 )                
 
             elif verb == "PUT":
-                response = requests.post(
+                response = requests.put(
                     f"{self.vault_host}/{path}",
                     headers={"X-Vault-Token": self.vault_token},
                     data=payload
@@ -178,7 +178,7 @@ def main(*args):
                 file_encrypted,
                 ExtraArgs={
                     "ServerSideEncryption": "AES256",
-                    "StorageClass": "STANDARD_IA"
+                    "StorageClass": "STANDARD"
                 }
             )
 
