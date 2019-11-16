@@ -1,3 +1,6 @@
+// General settings
+cluster_name = "imrim_vault"
+log_level = "error"
 ui = true
 disable_clustering = true
 
@@ -17,4 +20,7 @@ storage "dynamodb" {
 listener "tcp" {
  address     = "0.0.0.0:8200"
  tls_disable = 1
+//  tls_cert_file = 
+//  tls_key_file =
+//  tls_min_version = "tls12"
 }
