@@ -2,6 +2,7 @@
 vault/file/
 vault/logs/
 backup.sql*
+vault/config/.config.hcl.swp
 
 # venv exclusions
 bin/
