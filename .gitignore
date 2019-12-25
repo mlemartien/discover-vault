@@ -4,6 +4,10 @@ vault/logs/
 backup.sql*
 vault/config/.config.hcl.swp
 
+# Vagrant exclusions
+vagrant/.vagrant/
+*.crt
+
 # venv exclusions
 bin/
 include/

@@ -26,6 +26,10 @@ docker exec -it imrim_vault vault write aws/config/root \
     secret_key=<...> \
     region=eu-central-1
 
+# Rotate root credentials
+POST /aws/config/rotate-root
+curl --header "X-Vault-Token: ..." --request POST http://127.0.0.1:8211/v1/aws/config/rotate-root
+
 # Configure vault role for backup_archivers
 docker exec -it imrim_vault vault write aws/roles/backup_archiver \
     credential_type=iam_user \
