@@ -247,9 +247,23 @@ $ vault write aws/roles/backuparchiver \
         "s3:ListAllMyBuckets",
         "s3:CreateBucket",
         "s3:ListBucket",
-        "s3:HeadBucket"
+        "s3:HeadBucket",
       ],
-      "Resource": "*"
+      "Resource": [
+        "arn:aws:s3:::imrimbackup-odoo/*",
+        "arn:aws:s3:::imrimbackup-odoo",
+        "arn:aws:s3:::imrimbackup-confluence/*",
+        "arn:aws:s3:::imrimbackup-confluence",
+        "arn:aws:s3:::imrimbackup-gophish/*",
+        "arn:aws:s3:::imrimbackup-gophish",
+      ],
+      "Condition": {
+        "NotIpAddress": {
+          "aws:SourceIp": [
+            "91.121.136.49"
+          ]
+        }
+      }      
     }
   ]
 }
