@@ -1,6 +1,6 @@
 // General settings
 cluster_name = "imrim_vault"
-log_level = "error"
+log_level = "debug"
 ui = true
 disable_clustering = true
 

@@ -1,7 +1,7 @@
 # Project specific exclusions
 vault/file/
 vault/logs/
-backup.sql*
+backup.*
 vault/config/.config.hcl.swp
 
 # Vagrant exclusions
